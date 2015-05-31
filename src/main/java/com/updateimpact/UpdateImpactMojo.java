@@ -25,14 +25,17 @@ import java.util.*;
 public class UpdateImpactMojo extends AbstractMojo {
     private static final UUID BUILD_ID = UUID.randomUUID();
 
-    @Parameter( defaultValue = "${project}", readonly = true, required = true )
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
     @Component
     private DependencyTreeBuilder dependencyTreeBuilder;
 
-    @Parameter( defaultValue = "${localRepository}", readonly = true )
+    @Parameter(defaultValue = "${localRepository}", readonly = true)
     private ArtifactRepository localRepository;
+
+    @Parameter(required = true, property = "updateimpact.apikey")
+    private String apikey;
 
     public void execute() throws MojoExecutionException {
         try {
@@ -72,7 +75,7 @@ public class UpdateImpactMojo extends AbstractMojo {
                 }
             });
 
-            DependencyReport report = new DependencyReport(buildId(), allDependencies.values());
+            DependencyReport report = new DependencyReport(apikey, buildId(), allDependencies.values());
 
             System.out.println(new Gson().toJson(report));
 
