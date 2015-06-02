@@ -5,12 +5,12 @@ import java.util.Collection;
 public class DependencyReport {
     private final String apikey;
     private final String buildId;
-    private final Collection<Dependency> dependencies;
+    private final Collection<DependencyTree> trees;
 
-    public DependencyReport(String apikey, String buildId, Collection<Dependency> dependencies) {
+    public DependencyReport(String apikey, String buildId, Collection<DependencyTree> trees) {
         this.apikey = apikey;
         this.buildId = buildId;
-        this.dependencies = dependencies;
+        this.trees = trees;
     }
 
     public String getApikey() {
@@ -21,7 +21,7 @@ public class DependencyReport {
         return buildId;
     }
 
-    public Collection<Dependency> getDependencies() {
-        return dependencies;
+    public Collection<DependencyTree> getTrees() {
+        return trees;
     }
 }

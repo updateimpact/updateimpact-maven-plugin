@@ -62,7 +62,6 @@ public class UpdateImpactMojo extends AbstractMojo {
                         } else {
                             allDependencies.put(newDependencyId, new Dependency(
                                     newDependencyId,
-                                    newDependencyId.equals(rootNodeId) ? true : null,
                                     children.size() > 0 ? children : null));
                         }
                     }
@@ -75,7 +74,8 @@ public class UpdateImpactMojo extends AbstractMojo {
                 }
             });
 
-            DependencyReport report = new DependencyReport(apikey, buildId(), allDependencies.values());
+            DependencyReport report = new DependencyReport(apikey, buildId(),
+                    Collections.singletonList(new DependencyTree(rootNodeId, allDependencies.values())));
 
             System.out.println(new Gson().toJson(report));
 

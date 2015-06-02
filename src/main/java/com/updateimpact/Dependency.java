@@ -4,21 +4,15 @@ import java.util.List;
 
 public class Dependency {
     private final DependencyId id;
-    private final Boolean root;
     private final List<DependencyChild> dependencies;
 
-    public Dependency(DependencyId id, Boolean root, List<DependencyChild> dependencies) {
+    public Dependency(DependencyId id, List<DependencyChild> dependencies) {
         this.id = id;
-        this.root = root;
         this.dependencies = dependencies;
     }
 
     public DependencyId getId() {
         return id;
-    }
-
-    public Boolean getRoot() {
-        return root;
     }
 
     public List<DependencyChild> getDependencies() {
