@@ -1,5 +1,7 @@
 package com.updateimpact;
 
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+
 public class DependencyId {
     private final String groupId;
     private final String artifactId;
@@ -59,5 +61,15 @@ public class DependencyId {
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (classifier != null ? classifier.hashCode() : 0);
         return result;
+    }
+
+    public static DependencyId fromNode(DependencyNode node) {
+        return new DependencyId(
+                node.getArtifact().getGroupId(),
+                node.getArtifact().getArtifactId(),
+                node.getArtifact().getVersion(),
+                node.getArtifact().getType(),
+                node.getArtifact().getClassifier()
+        );
     }
 }

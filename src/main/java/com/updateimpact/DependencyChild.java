@@ -1,5 +1,7 @@
 package com.updateimpact;
 
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+
 public class DependencyChild {
     private final DependencyId id;
     private final String evictedByVersion;
@@ -37,5 +39,13 @@ public class DependencyChild {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    public static DependencyChild fromNode(DependencyNode node) {
+        return new DependencyChild(
+                DependencyId.fromNode(node),
+                node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact().getVersion() : null,
+                node.getState() == DependencyNode.OMITTED_FOR_CYCLE ? true : null
+        );
     }
 }

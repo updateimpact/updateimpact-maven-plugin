@@ -1,17 +1,10 @@
 package com.updateimpact;
 
 import com.google.gson.Gson;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -33,7 +26,6 @@ import java.util.List;
 public class UpdateImpactMojo extends AbstractMojo {
     // these are static so that they are shared across multi-module builds
     private static final UUID BUILD_ID = UUID.randomUUID();
-    private static final HttpClient HTTP_CLIENT = new DefaultHttpClient();
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -66,7 +58,21 @@ public class UpdateImpactMojo extends AbstractMojo {
             throw new MojoExecutionException("Exception when building the dependency tree", e);
         }
 
-        final DependencyId rootNodeId = idFromNode(rootNode);
+        DependencyReport report = createReport(rootNode);
+        String reportJson = new Gson().toJson(report);
+
+        String link = new ReportSender(url, getLog()).trySendReport(reportJson);
+        if (link != null) {
+            if (openBrowser) {
+                getLog().info("Trying to open the report in the default browser ... " +
+                        "(you can disable this by setting the updateimpact.openbrowser property to false)");
+                openLinkIfLastProject(link);
+            }
+        }
+    }
+
+    private DependencyReport createReport(DependencyNode rootNode) {
+        final DependencyId rootNodeId = DependencyId.fromNode(rootNode);
 
         final Map<DependencyId, Dependency> allDependencies = new HashMap<DependencyId, Dependency>();
 
@@ -75,10 +81,10 @@ public class UpdateImpactMojo extends AbstractMojo {
                 if (node.getState() == DependencyNode.INCLUDED) {
                     List<DependencyChild> children = new ArrayList<DependencyChild>();
                     for (DependencyNode childNode : node.getChildren()) {
-                        children.add(childFromNode(childNode));
+                        children.add(DependencyChild.fromNode(childNode));
                     }
 
-                    DependencyId newDependencyId = idFromNode(node);
+                    DependencyId newDependencyId = DependencyId.fromNode(node);
                     if (allDependencies.containsKey(newDependencyId)) {
                         getLog().warn("Duplicate dependency: " + node);
                     } else {
@@ -96,28 +102,8 @@ public class UpdateImpactMojo extends AbstractMojo {
             }
         });
 
-        DependencyReport report = new DependencyReport(apikey, buildId(),
-                Collections.singletonList(new DependencyTree(rootNodeId, allDependencies.values())));
-
-        trySendReport(new Gson().toJson(report));
-    }
-
-    private DependencyId idFromNode(DependencyNode node) {
-        return new DependencyId(
-                node.getArtifact().getGroupId(),
-                node.getArtifact().getArtifactId(),
-                node.getArtifact().getVersion(),
-                node.getArtifact().getType(),
-                node.getArtifact().getClassifier()
-        );
-    }
-
-    private DependencyChild childFromNode(DependencyNode node) {
-        return new DependencyChild(
-                idFromNode(node),
-                node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact().getVersion() : null,
-                node.getState() == DependencyNode.OMITTED_FOR_CYCLE ? true : null
-        );
+        return new DependencyReport(apikey, buildId(), Collections.singletonList(
+                new DependencyTree(rootNodeId, allDependencies.values())));
     }
 
     private String buildId() {
@@ -125,51 +111,13 @@ public class UpdateImpactMojo extends AbstractMojo {
         return BUILD_ID.toString();
     }
 
-    private void trySendReport(String report) throws MojoExecutionException {
-        try {
-            sendReport(report);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Exception when submitting the dependency report", e);
-        }
-    }
-
-    private void sendReport(String report) throws IOException {
-        String submitUrl = url + "/rest/submit";
-
-        Log log = getLog();
-
-        log.info("");
-        log.info("Submitting dependency report to " + submitUrl);
-        HttpPost post = new HttpPost(submitUrl);
-        post.setEntity(new StringEntity(report));
-        HttpResponse response = HTTP_CLIENT.execute(post);
-
-        String responseJson = EntityUtils.toString(response.getEntity());
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        if (statusCode < 200 || statusCode > 300) {
-            log.error("Cannot submit report to " + submitUrl + ", got response " + statusCode +
-                    ": " + responseJson);
-        } else {
-            SubmitResponse submitResponse = new Gson().fromJson(responseJson, SubmitResponse.class);
-            String viewLink = url + "/#/builds/" + submitResponse.getUserIdStr() + "/" + submitResponse.getBuildId();
-
-            log.info("");
-            log.info("Dependency report submitted. You can view it at: ");
-            log.info(viewLink);
-            log.info("");
-
-            if (openBrowser) {
-                log.info("Trying to open the report in the default browser ... " +
-                        "(you can disable this by setting the updateimpact.openbrowser property to false)");
-                openLinkIfLastProject(viewLink);
-            }
-        }
-    }
-
-    private void openLinkIfLastProject(String viewLink) throws IOException {
+    private void openLinkIfLastProject(String viewLink) throws MojoExecutionException {
         if (project == reactorProjects.get(reactorProjects.size() - 1)) {
-            openWebpage(viewLink);
+            try {
+                openWebpage(viewLink);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Exception when trying to open a link in the default browser", e);
+            }
         }
     }
 
