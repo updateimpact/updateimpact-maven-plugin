@@ -3,14 +3,26 @@ package com.updateimpact;
 import java.util.Collection;
 
 public class DependencyReport {
+    private final String projectName;
     private final String apikey;
     private final String buildId;
-    private final Collection<DependencyTree> trees;
+    private final Collection<ModuleDependencies> modules;
+    private final String version;
 
-    public DependencyReport(String apikey, String buildId, Collection<DependencyTree> trees) {
+    public DependencyReport(String projectName,
+                            String apikey,
+                            String buildId,
+                            Collection<ModuleDependencies> modules,
+                            String version) {
+        this.projectName = projectName;
         this.apikey = apikey;
         this.buildId = buildId;
-        this.trees = trees;
+        this.modules = modules;
+        this.version = version;
+    }
+
+    public String getProjectName() {
+        return projectName;
     }
 
     public String getApikey() {
@@ -21,7 +33,11 @@ public class DependencyReport {
         return buildId;
     }
 
-    public Collection<DependencyTree> getTrees() {
-        return trees;
+    public Collection<ModuleDependencies> getModules() {
+        return modules;
+    }
+
+    public String getVersion() {
+        return version;
     }
 }

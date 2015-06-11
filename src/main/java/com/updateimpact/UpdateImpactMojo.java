@@ -102,8 +102,12 @@ public class UpdateImpactMojo extends AbstractMojo {
             }
         });
 
-        return new DependencyReport(apikey, buildId(), Collections.singletonList(
-                new DependencyTree(rootNodeId, allDependencies.values())));
+        return new DependencyReport(
+                getProjectName(),
+                apikey,
+                buildId(),
+                Collections.singletonList(new ModuleDependencies(rootNodeId, allDependencies.values())),
+                "1.0");
     }
 
     private String buildId() {
@@ -127,5 +131,14 @@ public class UpdateImpactMojo extends AbstractMojo {
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
             desktop.browse(URI.create(url));
         }
+    }
+
+    private String getProjectName() {
+        MavenProject mainProject = project;
+        for (MavenProject reactorProject : reactorProjects) {
+            if (reactorProject.isExecutionRoot()) mainProject = reactorProject;
+        }
+
+        return mainProject.getName();
     }
 }
