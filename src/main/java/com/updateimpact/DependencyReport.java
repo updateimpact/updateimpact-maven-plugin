@@ -7,18 +7,18 @@ public class DependencyReport {
     private final String apikey;
     private final String buildId;
     private final Collection<ModuleDependencies> modules;
-    private final String version;
+    private final String formatVersion;
 
     public DependencyReport(String projectName,
                             String apikey,
                             String buildId,
                             Collection<ModuleDependencies> modules,
-                            String version) {
+                            String formatVersion) {
         this.projectName = projectName;
         this.apikey = apikey;
         this.buildId = buildId;
         this.modules = modules;
-        this.version = version;
+        this.formatVersion = formatVersion;
     }
 
     public String getProjectName() {
@@ -37,7 +37,7 @@ public class DependencyReport {
         return modules;
     }
 
-    public String getVersion() {
-        return version;
+    public String getFormatVersion() {
+        return formatVersion;
     }
 }
