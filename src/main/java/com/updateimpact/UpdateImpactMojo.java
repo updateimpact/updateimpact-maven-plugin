@@ -23,12 +23,12 @@ import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
+import java.util.List;
 
-/**
- * Goal which touches a timestamp file.
- */
 @Mojo(name = "dependencies", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class UpdateImpactMojo extends AbstractMojo {
     // these are static so that they are shared across multi-module builds
@@ -49,6 +49,12 @@ public class UpdateImpactMojo extends AbstractMojo {
 
     @Parameter(required = true, property = "updateimpact.url", defaultValue = "https://updateimpact.com")
     private String url;
+
+    @Parameter(required = true, property = "updateimpact.openbrowser", defaultValue = "true")
+    private boolean openBrowser;
+
+    @Parameter(defaultValue = "${reactorProjects}", readonly = true)
+    private List<MavenProject> reactorProjects;
 
     public void execute() throws MojoExecutionException {
         ArtifactFilter filter = new ScopeArtifactFilter("compile");
@@ -143,15 +149,35 @@ public class UpdateImpactMojo extends AbstractMojo {
 
         if (statusCode < 200 || statusCode > 300) {
             log.error("Cannot submit report to " + submitUrl + ", got response " + statusCode +
-                ": " + responseJson);
+                    ": " + responseJson);
         } else {
             SubmitResponse submitResponse = new Gson().fromJson(responseJson, SubmitResponse.class);
-            String viewLink = url + "/#/builds/" + submitResponse.getUserId() + "/" + submitResponse.getBuildId();
+            String viewLink = url + "/#/builds/" + submitResponse.getUserIdStr() + "/" + submitResponse.getBuildId();
 
             log.info("");
             log.info("Dependency report submitted. You can view it at: ");
             log.info(viewLink);
             log.info("");
+
+            if (openBrowser) {
+                log.info("Trying to open the report in the default browser ... " +
+                        "(you can disable this by setting the updateimpact.openbrowser property to false)");
+                openLinkIfLastProject(viewLink);
+            }
+        }
+    }
+
+    private void openLinkIfLastProject(String viewLink) throws IOException {
+        if (project == reactorProjects.get(reactorProjects.size() - 1)) {
+            openWebpage(viewLink);
+        }
+    }
+
+    // http://stackoverflow.com/questions/10967451/open-a-link-in-browser-with-java-button
+    private void openWebpage(String url) throws IOException {
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            desktop.browse(URI.create(url));
         }
     }
 }

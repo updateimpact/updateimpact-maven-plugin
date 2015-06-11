@@ -1,16 +1,16 @@
 package com.updateimpact;
 
 public class SubmitResponse {
-    private final String userId;
+    private final String userIdStr;
     private final String buildId;
 
-    public SubmitResponse(String userId, String buildId) {
-        this.userId = userId;
+    public SubmitResponse(String userIdStr, String buildId) {
+        this.userIdStr = userIdStr;
         this.buildId = buildId;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUserIdStr() {
+        return userIdStr;
     }
 
     public String getBuildId() {
