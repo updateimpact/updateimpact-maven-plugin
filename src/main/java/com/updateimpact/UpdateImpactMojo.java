@@ -39,7 +39,7 @@ public class UpdateImpactMojo extends AbstractMojo {
     @Parameter(required = true, property = "updateimpact.apikey")
     private String apikey;
 
-    @Parameter(required = true, property = "updateimpact.url", defaultValue = "https://updateimpact.com")
+    @Parameter(required = true, property = "updateimpact.url", defaultValue = "https://app.updateimpact.com")
     private String url;
 
     @Parameter(required = true, property = "updateimpact.openbrowser", defaultValue = "true")
