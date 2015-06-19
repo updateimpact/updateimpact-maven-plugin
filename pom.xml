@@ -15,6 +15,26 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <scm>
+        <url>https://github.com/updateimpact/updateimpact-maven-plugin.git</url>
+        <connection>scm:git:https://github.com/updateimpact/updateimpact-maven-plugin.git</connection>
+    </scm>
+    <developers>
+        <developer>
+            <id>adamw</id>
+            <name>Adam Warski</name>
+            <url>http://www.warski.org</url>
+        </developer>
+    </developers>
+    <description>Plugin to upload project dependency tree to updateimpact.com</description>
+    <licenses>
+        <license>
+            <name>Apache2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
