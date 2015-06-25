@@ -6,6 +6,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -13,7 +14,7 @@ import org.apache.maven.plugin.logging.Log;
 import java.io.IOException;
 
 public class ReportSender {
-    private static final HttpClient HTTP_CLIENT = new DefaultHttpClient();
+    private static final HttpClient HTTP_CLIENT = HttpClientBuilder.create().build();
 
     private final String url;
     private final Log log;

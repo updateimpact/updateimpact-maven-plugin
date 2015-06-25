@@ -106,7 +106,7 @@ public class UpdateImpactMojo extends AbstractMojo {
                 getProjectName(),
                 apikey,
                 buildId(),
-                Collections.singletonList(new ModuleDependencies(rootNodeId, allDependencies.values())),
+                Collections.singletonList(new ModuleDependencies(rootNodeId, "test", allDependencies.values())),
                 "1.0");
     }
 
