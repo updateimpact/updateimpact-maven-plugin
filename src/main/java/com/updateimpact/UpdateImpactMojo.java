@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.List;
 
-@Mojo(name = "send", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
+@Mojo(name = "submit", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class UpdateImpactMojo extends AbstractMojo {
     // these are static so that they are shared across multi-module builds
     private static final UUID BUILD_ID = UUID.randomUUID();
