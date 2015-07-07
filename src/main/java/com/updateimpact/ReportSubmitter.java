@@ -13,13 +13,13 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 
-public class ReportSender {
+public class ReportSubmitter {
     private static final HttpClient HTTP_CLIENT = HttpClientBuilder.create().build();
 
     private final String url;
     private final Log log;
 
-    public ReportSender(String url, Log log) {
+    public ReportSubmitter(String url, Log log) {
         this.url = url;
         this.log = log;
     }
