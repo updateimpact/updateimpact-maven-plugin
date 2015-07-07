@@ -61,7 +61,7 @@ public class UpdateImpactMojo extends AbstractMojo {
         DependencyReport report = createReport(rootNode);
         String reportJson = new Gson().toJson(report);
 
-        String link = new ReportSubmitter(url, getLog()).trySendReport(reportJson);
+        String link = new ReportSubmitter(url, getLog()).trySubmitReport(reportJson);
         if (link != null) {
             if (openBrowser) {
                 getLog().info("Trying to open the report in the default browser ... " +

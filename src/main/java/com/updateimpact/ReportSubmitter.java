@@ -5,7 +5,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,15 +23,15 @@ public class ReportSubmitter {
         this.log = log;
     }
 
-    public String trySendReport(String report) throws MojoExecutionException {
+    public String trySubmitReport(String report) throws MojoExecutionException {
         try {
-            return sendReport(report);
+            return submitReport(report);
         } catch (IOException e) {
             throw new MojoExecutionException("Exception when submitting the dependency report", e);
         }
     }
 
-    private String sendReport(String report) throws IOException {
+    private String submitReport(String report) throws IOException {
         String submitUrl = url + "/rest/submit";
 
         log.info("");
