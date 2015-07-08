@@ -32,7 +32,7 @@ public class ReportSubmitter {
     }
 
     private String submitReport(String report) throws IOException {
-        String submitUrl = url + "/rest/submit";
+        String submitUrl = url + "/api/submit";
 
         log.info("");
         log.info("Submitting dependency report to " + submitUrl);
