@@ -4,7 +4,7 @@
 
     <groupId>com.updateimpact</groupId>
     <artifactId>updateimpact-maven-plugin</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>maven-plugin</packaging>
 
     <name>UpdateImpact Maven Plugin</name>
@@ -58,14 +58,9 @@
             <version>2.10</version>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5</version>
+            <groupId>com.updateimpact</groupId>
+            <artifactId>updateimpact-plugin-common</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

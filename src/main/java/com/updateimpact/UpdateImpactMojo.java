@@ -61,7 +61,12 @@ public class UpdateImpactMojo extends AbstractMojo {
         DependencyReport report = createReport(rootNode);
         String reportJson = new Gson().toJson(report);
 
-        String link = new ReportSubmitter(url, getLog()).trySubmitReport(reportJson);
+        SubmitLogger log = new SubmitLogger() {
+            public void info(String message) { getLog().info(message); }
+            public void error(String message) { getLog().error(message); }
+        };
+
+        String link = new ReportSubmitter(url, log).trySubmitReport(reportJson);
         if (link != null) {
             if (openBrowser) {
                 getLog().info("Trying to open the report in the default browser ... " +
@@ -72,7 +77,7 @@ public class UpdateImpactMojo extends AbstractMojo {
     }
 
     private DependencyReport createReport(DependencyNode rootNode) {
-        final DependencyId rootNodeId = DependencyId.fromNode(rootNode);
+        final DependencyId rootNodeId = dependencyIdFromNode(rootNode);
 
         final Map<DependencyId, Dependency> allDependencies = new HashMap<DependencyId, Dependency>();
 
@@ -81,10 +86,10 @@ public class UpdateImpactMojo extends AbstractMojo {
                 if (node.getState() == DependencyNode.INCLUDED) {
                     List<DependencyChild> children = new ArrayList<DependencyChild>();
                     for (DependencyNode childNode : node.getChildren()) {
-                        children.add(DependencyChild.fromNode(childNode));
+                        children.add(dependencyChildFromNode(childNode));
                     }
 
-                    DependencyId newDependencyId = DependencyId.fromNode(node);
+                    DependencyId newDependencyId = dependencyIdFromNode(node);
                     if (allDependencies.containsKey(newDependencyId)) {
                         getLog().warn("Duplicate dependency: " + node);
                     } else {
@@ -107,7 +112,8 @@ public class UpdateImpactMojo extends AbstractMojo {
                 apikey,
                 buildId(),
                 Collections.singletonList(new ModuleDependencies(rootNodeId, "test", allDependencies.values())),
-                "1.0");
+                "1.0",
+                "maven-plugin-1.0.4");
     }
 
     private String buildId() {
@@ -140,5 +146,23 @@ public class UpdateImpactMojo extends AbstractMojo {
         }
 
         return mainProject.getName();
+    }
+
+    private DependencyId dependencyIdFromNode(DependencyNode node) {
+        return new DependencyId(
+                node.getArtifact().getGroupId(),
+                node.getArtifact().getArtifactId(),
+                node.getArtifact().getVersion(),
+                node.getArtifact().getType(),
+                node.getArtifact().getClassifier()
+        );
+    }
+
+    private DependencyChild dependencyChildFromNode(DependencyNode node) {
+        return new DependencyChild(
+                dependencyIdFromNode(node),
+                node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact().getVersion() : null,
+                node.getState() == DependencyNode.OMITTED_FOR_CYCLE ? true : null
+        );
     }
 }
