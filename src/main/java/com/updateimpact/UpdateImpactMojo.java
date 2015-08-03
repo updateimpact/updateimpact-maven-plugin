@@ -1,6 +1,6 @@
 package com.updateimpact;
 
-import com.google.gson.Gson;
+import com.updateimpact.report.*;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.plugin.AbstractMojo;
@@ -59,14 +59,13 @@ public class UpdateImpactMojo extends AbstractMojo {
         }
 
         DependencyReport report = createReport(rootNode);
-        String reportJson = new Gson().toJson(report);
 
         SubmitLogger log = new SubmitLogger() {
             public void info(String message) { getLog().info(message); }
             public void error(String message) { getLog().error(message); }
         };
 
-        String link = new ReportSubmitter(url, log).trySubmitReport(reportJson);
+        String link = new ReportSubmitter(url, log).trySubmitReport(report);
         if (link != null) {
             if (openBrowser) {
                 getLog().info("Trying to open the report in the default browser ... " +
@@ -112,8 +111,9 @@ public class UpdateImpactMojo extends AbstractMojo {
                 apikey,
                 buildId(),
                 Collections.singletonList(new ModuleDependencies(rootNodeId, "test", allDependencies.values())),
+                Collections.<ModuleIvyReport>emptyList(),
                 "1.0",
-                "maven-plugin-1.0.4");
+                "maven-plugin-1.0.5");
     }
 
     private String buildId() {
