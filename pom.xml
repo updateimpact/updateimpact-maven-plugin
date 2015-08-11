@@ -4,7 +4,7 @@
 
     <groupId>com.updateimpact</groupId>
     <artifactId>updateimpact-maven-plugin</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <packaging>maven-plugin</packaging>
 
     <name>UpdateImpact Maven Plugin</name>
@@ -60,7 +60,7 @@
         <dependency>
             <groupId>com.updateimpact</groupId>
             <artifactId>updateimpact-plugin-common</artifactId>
-            <version>1.1.1</version>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
