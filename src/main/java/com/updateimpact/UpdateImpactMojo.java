@@ -113,7 +113,7 @@ public class UpdateImpactMojo extends AbstractMojo {
                 Collections.singletonList(new ModuleDependencies(rootNodeId, "test", allDependencies.values())),
                 Collections.<ModuleIvyReport>emptyList(),
                 "1.0",
-                "maven-plugin-1.0.5");
+                "maven-plugin-1.0.7");
     }
 
     private String buildId() {
