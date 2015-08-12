@@ -82,21 +82,17 @@ public class UpdateImpactMojo extends AbstractMojo {
 
         rootNode.accept(new DependencyNodeVisitor() {
             public boolean visit(DependencyNode node) {
-                if (node.getState() == DependencyNode.INCLUDED) {
-                    List<DependencyChild> children = new ArrayList<DependencyChild>();
-                    for (DependencyNode childNode : node.getChildren()) {
-                        children.add(dependencyChildFromNode(childNode));
-                    }
-
-                    DependencyId newDependencyId = dependencyIdFromNode(node);
-                    if (allDependencies.containsKey(newDependencyId)) {
-                        getLog().warn("Duplicate dependency: " + node);
-                    } else {
-                        allDependencies.put(newDependencyId, new Dependency(
-                                newDependencyId,
-                                children.size() > 0 ? children : null));
-                    }
+                List<DependencyId> children = new ArrayList<DependencyId>();
+                for (DependencyNode childNode : node.getChildren()) {
+                    children.add(dependencyIdFromNode(childNode));
                 }
+
+                DependencyId newDependencyId = dependencyIdFromNode(node);
+                allDependencies.put(newDependencyId, new Dependency(
+                        newDependencyId,
+                        node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact().getVersion() : null,
+                        node.getState() == DependencyNode.OMITTED_FOR_CYCLE ? true : null,
+                        children.size() > 0 ? children : null));
 
                 return true;
             }
@@ -113,7 +109,7 @@ public class UpdateImpactMojo extends AbstractMojo {
                 Collections.singletonList(new ModuleDependencies(rootNodeId, "test", allDependencies.values())),
                 Collections.<ModuleIvyReport>emptyList(),
                 "1.0",
-                "maven-plugin-1.0.7");
+                "maven-plugin-1.0.8");
     }
 
     private String buildId() {
@@ -155,14 +151,6 @@ public class UpdateImpactMojo extends AbstractMojo {
                 node.getArtifact().getVersion(),
                 node.getArtifact().getType(),
                 node.getArtifact().getClassifier()
-        );
-    }
-
-    private DependencyChild dependencyChildFromNode(DependencyNode node) {
-        return new DependencyChild(
-                dependencyIdFromNode(node),
-                node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact().getVersion() : null,
-                node.getState() == DependencyNode.OMITTED_FOR_CYCLE ? true : null
         );
     }
 }
