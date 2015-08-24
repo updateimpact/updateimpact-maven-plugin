@@ -26,6 +26,7 @@ import java.util.List;
 public class UpdateImpactMojo extends AbstractMojo {
     // these are static so that they are shared across multi-module builds
     private static final UUID BUILD_ID = UUID.randomUUID();
+    private static final List<ModuleDependencies> moduleDependencies = new ArrayList<ModuleDependencies>();
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -58,24 +59,13 @@ public class UpdateImpactMojo extends AbstractMojo {
             throw new MojoExecutionException("Exception when building the dependency tree", e);
         }
 
-        DependencyReport report = createReport(rootNode);
+        ModuleDependencies md = createModuleDependencies(rootNode);
+        moduleDependencies.add(md);
 
-        SubmitLogger log = new SubmitLogger() {
-            public void info(String message) { getLog().info(message); }
-            public void error(String message) { getLog().error(message); }
-        };
-
-        String link = new ReportSubmitter(url, log).trySubmitReport(report);
-        if (link != null) {
-            if (openBrowser) {
-                getLog().info("Trying to open the report in the default browser ... " +
-                        "(you can disable this by setting the updateimpact.openbrowser property to false)");
-                openLinkIfLastProject(link);
-            }
-        }
+        submitIfLastProject();
     }
 
-    private DependencyReport createReport(DependencyNode rootNode) {
+    private ModuleDependencies createModuleDependencies(DependencyNode rootNode) {
         final DependencyId rootNodeId = dependencyIdFromNode(rootNode);
 
         final Map<DependencyId, Dependency> allDependencies = new HashMap<DependencyId, Dependency>();
@@ -102,14 +92,41 @@ public class UpdateImpactMojo extends AbstractMojo {
             }
         });
 
-        return new DependencyReport(
-                getProjectName(),
-                apikey,
-                buildId(),
-                Collections.singletonList(new ModuleDependencies(rootNodeId, "test", allDependencies.values())),
-                Collections.<ModuleIvyReport>emptyList(),
-                "1.0",
-                "maven-plugin-1.0.8");
+        return new ModuleDependencies(rootNodeId, "test", allDependencies.values());
+    }
+
+    private void submitIfLastProject() throws MojoExecutionException {
+        if (isLastProject()) {
+            DependencyReport dr = new DependencyReport(
+                    getProjectName(),
+                    apikey,
+                    buildId(),
+                    moduleDependencies,
+                    Collections.<ModuleIvyReport>emptyList(),
+                    "1.0",
+                    "maven-plugin-1.0.9");
+
+            SubmitLogger log = new SubmitLogger() {
+                public void info(String message) { getLog().info(message); }
+                public void error(String message) { getLog().error(message); }
+            };
+
+            String link = new ReportSubmitter(url, log).trySubmitReport(dr);
+            if (link != null) {
+                if (openBrowser) {
+                    getLog().info("Trying to open the report in the default browser ... " +
+                            "(you can disable this by setting the updateimpact.openbrowser property to false)");
+
+                    try {
+                        openWebpage(link);
+                    } catch (IOException e) {
+                        throw new MojoExecutionException("Exception when trying to open a link in the default browser", e);
+                    }
+                }
+            }
+
+            moduleDependencies.clear();
+        }
     }
 
     private String buildId() {
@@ -117,14 +134,8 @@ public class UpdateImpactMojo extends AbstractMojo {
         return BUILD_ID.toString();
     }
 
-    private void openLinkIfLastProject(String viewLink) throws MojoExecutionException {
-        if (project == reactorProjects.get(reactorProjects.size() - 1)) {
-            try {
-                openWebpage(viewLink);
-            } catch (IOException e) {
-                throw new MojoExecutionException("Exception when trying to open a link in the default browser", e);
-            }
-        }
+    private boolean isLastProject() {
+        return project == reactorProjects.get(reactorProjects.size() - 1);
     }
 
     // http://stackoverflow.com/questions/10967451/open-a-link-in-browser-with-java-button
