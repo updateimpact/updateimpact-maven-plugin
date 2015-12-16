@@ -37,7 +37,7 @@ public class UpdateImpactMojo extends AbstractMojo {
     @Parameter(defaultValue = "${localRepository}", readonly = true)
     private ArtifactRepository localRepository;
 
-    @Parameter(required = true, property = "updateimpact.apikey")
+    @Parameter(property = "updateimpact.apikey")
     private String apikey;
 
     @Parameter(required = true, property = "updateimpact.url", defaultValue = "https://app.updateimpact.com")
@@ -50,6 +50,8 @@ public class UpdateImpactMojo extends AbstractMojo {
     private List<MavenProject> reactorProjects;
 
     public void execute() throws MojoExecutionException {
+        setAndVerifyApiKey();
+
         ArtifactFilter filter = new ScopeArtifactFilter("compile");
         DependencyNode rootNode;
 
@@ -163,5 +165,15 @@ public class UpdateImpactMojo extends AbstractMojo {
                 node.getArtifact().getType(),
                 node.getArtifact().getClassifier()
         );
+    }
+
+    private void setAndVerifyApiKey() throws MojoExecutionException {
+        if (apikey == null || "".equals(apikey)) {
+            apikey = System.getenv("UPDATEIMPACT_API_KEY");
+        }
+
+        if (apikey == null || "".equals(apikey)) {
+            throw new MojoExecutionException("Please define the api key. You can find it on UpdateImpact.com");
+        }
     }
 }
