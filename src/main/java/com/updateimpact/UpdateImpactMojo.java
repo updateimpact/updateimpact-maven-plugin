@@ -75,16 +75,26 @@ public class UpdateImpactMojo extends AbstractMojo {
         rootNode.accept(new DependencyNodeVisitor() {
             public boolean visit(DependencyNode node) {
                 List<DependencyId> children = new ArrayList<DependencyId>();
+                System.out.println("NODE: " + node.getArtifact());
                 for (DependencyNode childNode : node.getChildren()) {
+                    System.out.println("  CHILD " + childNode.getArtifact());
                     children.add(dependencyIdFromNode(childNode));
                 }
 
                 DependencyId newDependencyId = dependencyIdFromNode(node);
-                allDependencies.put(newDependencyId, new Dependency(
+
+                Dependency newDependency = new Dependency(
                         newDependencyId,
                         node.getState() == DependencyNode.OMITTED_FOR_CONFLICT ? node.getRelatedArtifact().getVersion() : null,
                         node.getState() == DependencyNode.OMITTED_FOR_CYCLE ? true : null,
-                        children.size() > 0 ? children : null));
+                        children.size() > 0 ? children : null);
+
+                if (allDependencies.containsKey(newDependencyId)) {
+                    Dependency current = allDependencies.get(newDependencyId);
+                    allDependencies.put(newDependencyId, mergeDependencies(newDependency, current));
+                } else {
+                    allDependencies.put(newDependencyId, newDependency);
+                }
 
                 return true;
             }
@@ -175,5 +185,17 @@ public class UpdateImpactMojo extends AbstractMojo {
         if (apikey == null || "".equals(apikey)) {
             throw new MojoExecutionException("Please define the api key. You can find it on UpdateImpact.com");
         }
+    }
+
+    private Dependency mergeDependencies(Dependency d1, Dependency d2) {
+        LinkedHashSet<DependencyId> allChildren = new LinkedHashSet<DependencyId>();
+        if (d1.getChildren() != null) allChildren.addAll(d1.getChildren());
+        if (d2.getChildren() != null) allChildren.addAll(d2.getChildren());
+        return new Dependency(
+                d1.getId(),
+                d1.getEvictedByVersion() == null ? d2.getEvictedByVersion() : d1.getEvictedByVersion(),
+                d1.getCycle() == null ? d2.getCycle() : d1.getCycle(),
+                new ArrayList<DependencyId>(allChildren)
+        );
     }
 }
