@@ -75,9 +75,7 @@ public class UpdateImpactMojo extends AbstractMojo {
         rootNode.accept(new DependencyNodeVisitor() {
             public boolean visit(DependencyNode node) {
                 List<DependencyId> children = new ArrayList<DependencyId>();
-                System.out.println("NODE: " + node.getArtifact());
                 for (DependencyNode childNode : node.getChildren()) {
-                    System.out.println("  CHILD " + childNode.getArtifact());
                     children.add(dependencyIdFromNode(childNode));
                 }
 
